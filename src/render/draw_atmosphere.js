@@ -8,7 +8,7 @@ import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
 import type {DynamicDefinesType} from '../render/program/program_uniforms.js';
-import {degToRad, mapValue} from '../util/util.js';
+import {degToRad} from '../util/util.js';
 import {vec3, mat4, quat} from 'gl-matrix';
 import Fog from '../style/fog.js';
 
@@ -38,9 +38,9 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
 
     const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
 
-    const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
+    const starIntensity = fog.properties.get('star-intensity') * 0.25;
     // https://www.desmos.com/calculator/oanvvpr36d
-    const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0, 0.25);
+    const horizonBlend = fog.properties.get('horizon-blend') * 0.25;
 
     const globeCenterInViewSpace = (((tr.globeCenterInViewSpace): any): Array<number>);
     const globeCenterDistance = vec3.length(globeCenterInViewSpace);
