@@ -1027,7 +1027,7 @@ class Painter {
     }
 
     averageElevationNeedsEasing(): boolean {
-        if (!this.transform._elevation) return false;
+        if (!this.transform._elevation || this.transform.projection.name === 'globe') return false;
 
         const fog = this.style && this.style.fog;
         if (!fog) return false;

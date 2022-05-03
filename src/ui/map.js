@@ -3093,12 +3093,9 @@ class Map extends Camera {
             this._sourcesDirty = false;
             this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
-            averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style._updateSources(this.transform);
             // Update positions of markers on enabling/disabling terrain
             this._forceMarkerUpdate();
-        } else {
-            averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
@@ -3191,29 +3188,20 @@ class Map extends Camera {
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
         const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty || averageElevationChanged;
-        if (somethingDirty || this._repaint) {
+        const willIdle = !this.isMoving() && this.loaded();
+        averageElevationChanged = this._updateAverageElevation(frameStartTime, willIdle);
+        if (somethingDirty || this._repaint || averageElevationChanged) {
             this.triggerRepaint();
         } else {
-            const willIdle = !this.isMoving() && this.loaded();
+            this._triggerFrame(false);
             if (willIdle) {
-                // Before idling, we perform one last sample so that if the average elevation
-                // does not exactly match the terrain, we skip idle and ease it to its final state.
-                averageElevationChanged = this._updateAverageElevation(frameStartTime, true);
-            }
-
-            if (averageElevationChanged) {
-                this.triggerRepaint();
-            } else {
-                this._triggerFrame(false);
-                if (willIdle) {
-                    this.fire(new Event('idle'));
-                    this._isInitialLoad = false;
-                    // check the options to see if need to calculate the speed index
-                    if (this.speedIndexTiming) {
-                        const speedIndexNumber = this._calculateSpeedIndex();
-                        this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
-                        this.speedIndexTiming = false;
-                    }
+                this.fire(new Event('idle'));
+                this._isInitialLoad = false;
+                // check the options to see if need to calculate the speed index
+                if (this.speedIndexTiming) {
+                    const speedIndexNumber = this._calculateSpeedIndex();
+                    this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
+                    this.speedIndexTiming = false;
                 }
             }
         }
