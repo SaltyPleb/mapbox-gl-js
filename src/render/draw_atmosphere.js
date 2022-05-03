@@ -42,17 +42,12 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
     // https://www.desmos.com/calculator/oanvvpr36d
     const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0, 0.25);
 
-    const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const globeCenterInViewSpace = (((tr.globeCenterInViewSpace): any): Array<number>);
     const globeCenterDistance = vec3.length(globeCenterInViewSpace);
     const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(tr.globeRadius, 2.0));
     const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
 
     const uniforms = atmosphereUniformValues(
-        tr.frustumCorners.TL,
-        tr.frustumCorners.TR,
-        tr.frustumCorners.BR,
-        tr.frustumCorners.BL,
         tr.frustumCorners.horizon,
         transitionT,
         horizonBlend,
@@ -60,7 +55,6 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
         highColor,
         spaceColor,
         starIntensity,
-        temporalOffset,
         horizonAngle,
         rotationMatrix);
 
